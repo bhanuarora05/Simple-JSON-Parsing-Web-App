@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+body{
+	text-align: center;
+}
+h1{
+	margin-top: 98px; 
+    font-family: Times, serif;
+	font-size: 24px;
+}
+#button1:active {
+	padding-top:0;
+	padding-bottom:0;
+	padding-left: 8px;
+	padding-right: 8px;
+	outline: 2px solid #77AFE8;
+	outline-offset: 0.5px;
+}
+</style>
+</head>
+<body>
+
+<h1>Enter URL for Highest-grossing films List JSON File</h1>
+<form name="myform" method="POST" id="location">
+<input type="text" name="URL" maxlength="255" size="50" align="middle" style="margin-top: 8px;margin-bottom: 5px;width:196px;border:1.5px solid #D3D3D3;font-size:16px" onblur="{this.style.marginBottom = '5px';this.style.border='1.5px solid #D3D3D3';this.style.boxShadow = 'none';this.style.marginTop = '8px';}" onfocus="{this.style.marginTop = '6.4px';this.style.marginBottom = '3.5px';this.style.border = '3px solid #77AFE8';this.style.boxShadow = '0 0 3px #77AFE8';}" />
+<br /><br/>
+<input id='button1' type="button" name="submit" value="Submit Query" margin-top="199" margin-left="663"
+onClick="viewJSON(this.form)" style="line-height:1.5;border: 1.5px solid #C0C0C0;background-color:white;width:117px;height:27px;font-family:Arial,Helvetica,sans-serif;font-size:16px;" />
+</form>
+
+<script>
+function viewJSON(what){
+var URL = what.URL.value;
+if (URL.length < 1)
+    {
+        window.alert("Field is blank");
+        return false;
+    }
+function loadJSON(url) {
+if (window.XMLHttpRequest)
+{// code for IE7+, Firefox, Chrome, Opera, Safari
+xmlhttp=new XMLHttpRequest();
+} else {// code for IE6, IE5
+xmlhttp=new ActiveXObject("Microsoft.XMLHTTP"); }
+xmlhttp.open("GET",url,false); // "synchronous"
+xmlhttp.send();
+if (xmlhttp.status==404){
+	alert("File doesn't exist");
+	return;
+}
+jsonObj= JSON.parse(xmlhttp.responseText);
+return jsonObj; }
+jsonObj = loadJSON(URL);
+if (window.ActiveXObject) //if IE, simply execute script (due to async prop).
+{ if (jsonObj.parseError.errorCode != 0) {
+var myErr = jsonObj.parseError;
+generateError(jsonObj);
+hWin = window.open("", "Error", "height=300,width=340");
+hWin.document.write(html_text);
+} else { generateHTML(jsonObj);
+hWin = window.open("", "Assignment4", "height=800,width=1000");
+hWin.document.write(html_text); }
+} else //else if FF, execute script once JSON object has loaded
+{ jsonObj.onload=generateHTML(jsonObj);
+  if(flag==1){
+  	flag=0;
+  	return;
+  }
+  else{ hWin = window.open("", "_blank", "height=800,width=1000");
+        hWin.document.write(html_text); } hWin.document.close();
+  }
+ }
+function generateHTML(jsonObj) {
+root=jsonObj.DocumentElement;
+flag=0;
+if (!("Row" in jsonObj.Mainline.Table))
+{   flag=1;
+	alert("JSON doesn't contain films");
+	return;
+}
+html_text="<html><head><title>Highest-grossing films</title><style>img{width:115;}</style></head><body>";
+html_text+="<table border='2'>";
+films=jsonObj.Mainline.Table.Header.Data; // an array of planes
+html_text+="<tbody>";
+html_text+="<tr>";
+// output the headers
+for(i=0;i<films.length;i++) {
+header=films[i];
+html_text+="<th>"+header+"</th>";
+}
+html_text+="</tr>";
+// output out the values
+films_values=jsonObj.Mainline.Table.Row;
+for(i=0;i<films_values.length;i++) //do for all planes (one per row)
+{
+filmNodeList=films_values[i]; //get properties of a plane (an object)
+html_text+="<tr>"; //start a new row of the output table
+var films_keys = Object.keys(filmNodeList);
+for(j=0;j<films_keys.length;j++)
+{
+prop = films_keys[j];
+if(films_keys[j]=="Logo")
+{//handle images separately
+html_text+="<td><img src='"+ filmNodeList[prop] +"'></td>";
+} 
+else if(films_keys[j]=="HomePage")
+{//handle links separately
+html_text+="<td style='white-space: nowrap;width: 1;'><a href='"+ filmNodeList[prop] +"'>"+ filmNodeList[prop] +"</a></td>";
+}
+else if(films_keys[j]=="Hubs")
+{//handle Info separately
+	    temp = filmNodeList.Hubs.Hub
+	    if (temp.length==0){
+	    	html_text+="<td>"+"&#160"+"</td>"
+	    }
+	    else
+	    {
+	    	html_text+="<td><ul><li><b>"+filmNodeList.Hubs.Hub[0]+"</b></li>";
+	    for(k =1;k<temp.length;k++)
+	    {
+	    	html_text+="<li>"+filmNodeList.Hubs.Hub[k]+"</li>";
+	    }
+	    html_text+="</ul></td>";
+	    }
+	    		
+}
+else {
+html_text+="<td style='overflow-wrap:normal;width: 1;'>"+ filmNodeList[prop] +"</td>";
+}
+}
+html_text+="</tr>";
+}
+html_text+="</tbody>";
+html_text+="</table>";
+html_text+="</body></html>"; }
+</script>
+
+</body>
+</html>
